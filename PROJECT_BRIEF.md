@@ -31,7 +31,7 @@ The AI's job is narrow: read the message, pick a verdict, and pick warning signs
 ```json
 {
   "verdict": "likely_scam | be_careful | no_strong_signs",
-  "signs": ["fee_to_release_parcel", "link_not_official"],
+  "signs": ["small_fee_request", "link_not_official"],
   "explanations": ["Royal Mail doesn't text asking for a fee...", "..."],
   "impersonating": "Royal Mail | HMRC | bank | family member | none | other"
 }

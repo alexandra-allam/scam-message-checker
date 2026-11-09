@@ -175,12 +175,27 @@ def _get_client():
 
 
 def classify(message: str, channel=None, sender=None) -> dict:
-    """Classify one message. Never raises for API problems: returns an error result."""
+    """Classify one message. Never raises for API problems: returns an error result.
+
+    If the AI's answer fails validation (bad JSON or outside the fixed rules),
+    the call is retried once. A second failure is returned as an error.
+    """
     if not message or not message.strip():
         return _error("empty message")
     if channel is not None and channel not in CHANNELS:
         channel = "other"
 
+    result, retryable = _classify_once(message, channel, sender)
+    if retryable:
+        result, _ = _classify_once(message, channel, sender)
+        if result["error"]:
+            result["error"] = f"failed twice: {result['error']}"
+    return result
+
+
+def _classify_once(message, channel, sender):
+    """One API call. Returns (result, retryable): retryable is True only when
+    the answer arrived but failed validation."""
     import anthropic
 
     try:
@@ -195,24 +210,24 @@ def classify(message: str, channel=None, sender=None) -> dict:
             },
         )
     except anthropic.APIConnectionError:
-        return _error("api: network error")
+        return _error("api: network error"), False
     except anthropic.RateLimitError:
-        return _error("api: rate limited")
+        return _error("api: rate limited"), False
     except anthropic.APIStatusError as e:
-        return _error(f"api: HTTP {e.status_code}: {e.message}")
+        return _error(f"api: HTTP {e.status_code}: {e.message}"), False
 
     if response.stop_reason == "refusal":
-        return _error("model refused")
+        return _error("model refused"), False
     if response.stop_reason != "end_turn":
-        return _error(f"unexpected stop_reason: {response.stop_reason}")
+        return _error(f"unexpected stop_reason: {response.stop_reason}"), False
 
     text = next((b.text for b in response.content if b.type == "text"), None)
     if text is None:
-        return _error("no text in response")
+        return _error("no text in response"), False
     try:
         data = json.loads(text)
     except json.JSONDecodeError:
-        return _error("response was not valid JSON")
+        return _error("response was not valid JSON"), True
 
     # Step 3 fix: the AI sometimes lists more than 3 signs. They are asked for
     # most important first, so keep the first 3 (and their explanations).
@@ -226,5 +241,5 @@ def classify(message: str, channel=None, sender=None) -> dict:
 
     problem = validate(data)
     if problem:
-        return _error(f"invalid output: {problem}")
-    return {**data, "error": None}
+        return _error(f"invalid output: {problem}"), True
+    return {**data, "error": None}, False
