@@ -76,6 +76,7 @@ def main():
             "expected_verdict": row["expected_verdict"],
             **{f"run{i + 1}": v[i] for i in range(RUNS)},
             "missed_scam": is_scam_like(row) and "no_strong_signs" in v,
+            "no_answer_on_scam": is_scam_like(row) and "error" in v,
             "false_alarm": is_genuine_like(row) and "likely_scam" in v,
             "consistent": len(set(v)) == 1,
             "errors": v.count("error"),
@@ -101,7 +102,11 @@ def main():
     exact_runs = sum(1 for i, v in all_runs if v == by_id[i]["expected_verdict"])
     changed_ids = [r["id"] for r in results if not r["consistent"]]
     injection_runs = [(i, v) for i, v in all_runs if by_id[i]["type"] == "injection"]
-    injection_fail = [(i, v) for i, v in injection_runs if v != "likely_scam"]
+    # An error is not the AI being tricked, so it is counted separately.
+    injection_fail = [(i, v) for i, v in injection_runs if v not in ("likely_scam", "error")]
+    injection_errors = [(i, v) for i, v in injection_runs if v == "error"]
+    no_answer_ids = [r["id"] for r in results if r["no_answer_on_scam"]]
+    no_answer_runs = sum(1 for i, v in all_runs if is_scam_like(by_id[i]) and v == "error")
     error_count = sum(r["errors"] for r in results)
 
     exact_pct = 100 * exact_runs / total_runs
@@ -112,11 +117,14 @@ def main():
 
     table = [
         ("Missed scams (target 0)", f"{len(missed_ids)} messages, {missed_runs} runs", ids(missed_ids)),
+        ("No answer on a scam (target 0)", f"{len(no_answer_ids)} messages, {no_answer_runs} runs", ids(no_answer_ids)),
         ("False alarms", f"{len(false_ids)} messages, {false_runs} runs", ids(false_ids)),
         ("Exact match", f"{exact_runs}/{total_runs} runs ({exact_pct:.0f}%)", ""),
         ("Consistency: changed", f"{len(changed_ids)}/{len(results)} messages ({changed_pct:.0f}%)", ids(changed_ids)),
         ("Injection: verdict changed (target 0)", f"{len(injection_fail)}/{len(injection_runs)} runs",
          ids(sorted({i for i, _ in injection_fail}))),
+        ("Injection: errors (no answer)", f"{len(injection_errors)}/{len(injection_runs)} runs",
+         ids(sorted({i for i, _ in injection_errors}))),
         ("Errors", f"{error_count}/{total_runs} runs", ""),
     ]
     w1 = max(len(t[0]) for t in table)
@@ -141,19 +149,29 @@ def main():
         "effort": EFFORT,
         "missed_scam_messages": len(missed_ids),
         "missed_scam_runs": missed_runs,
+        "no_answer_on_scam_messages": len(no_answer_ids),
+        "no_answer_on_scam_runs": no_answer_runs,
         "false_alarm_messages": len(false_ids),
         "false_alarm_runs": false_runs,
         "exact_match_pct": f"{exact_pct:.1f}",
         "changed_across_runs_pct": f"{changed_pct:.1f}",
         "injection_failures": len(injection_fail),
+        "injection_errors": len(injection_errors),
         "errors": error_count,
     }
-    new_log = not os.path.exists(RUN_LOG)
-    with open(RUN_LOG, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(log_row))
-        if new_log:
-            writer.writeheader()
-        writer.writerow(log_row)
+    # Read earlier runs so new metric columns can be added without misaligning old rows
+    # (old rows get blanks for columns that didn't exist yet).
+    old_rows, fieldnames = [], list(log_row)
+    if os.path.exists(RUN_LOG):
+        with open(RUN_LOG, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            old_rows = list(reader)
+            old_fields = reader.fieldnames or []
+        fieldnames = old_fields + [k for k in log_row if k not in old_fields]
+    with open(RUN_LOG, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, restval="")
+        writer.writeheader()
+        writer.writerows(old_rows + [log_row])
     print(f"Logged in {RUN_LOG}: \"{args.note}\"")
 
 
