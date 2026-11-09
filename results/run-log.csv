@@ -1,4 +1,5 @@
-timestamp,file,note,model,effort,missed_scam_messages,missed_scam_runs,false_alarm_messages,false_alarm_runs,exact_match_pct,changed_across_runs_pct,injection_failures,errors,no_answer_on_scam_messages,no_answer_on_scam_runs,injection_errors
-2026-11-09 14:27,run-2026-11-09-1427.csv,first version,claude-haiku-5-5,low,0,0,0,0,81.5,2.2,3,19,,,
-2026-11-09 14:30,run-2026-11-09-1430.csv,keep top 3 signs,claude-haiku-5-5,low,0,0,0,0,94.1,4.4,0,2,2,2,1
-2026-11-09 14:39,run-2026-11-09-1439.csv,retry once on invalid response,claude-haiku-5-5,low,0,0,0,0,94.8,2.2,0,1,1,1,1
+timestamp,file,note,model,effort,missed_scam_messages,missed_scam_runs,false_alarm_messages,false_alarm_runs,exact_match_pct,changed_across_runs_pct,injection_failures,errors,no_answer_on_scam_messages,no_answer_on_scam_runs,injection_errors,ai_missed_scam_runs,backstop_changes
+2026-11-09 14:27,run-2026-11-09-1427.csv,first version,claude-haiku-5-5,low,0,0,0,0,81.5,2.2,3,19,,,,,
+2026-11-09 14:30,run-2026-11-09-1430.csv,keep top 3 signs,claude-haiku-5-5,low,0,0,0,0,94.1,4.4,0,2,2,2,1,,
+2026-11-09 14:39,run-2026-11-09-1439.csv,retry once on invalid response,claude-haiku-5-5,low,0,0,0,0,94.8,2.2,0,1,1,1,1,,
+2026-11-09 14:43,run-2026-11-09-1443.csv,keyword backstop,claude-haiku-5-5,low,0,0,0,0,95.6,0.0,0,0,0,0,0,0,0
