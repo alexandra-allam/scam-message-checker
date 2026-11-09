@@ -170,13 +170,20 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+def clear_form():
+    """'Check another message': empty the form so a new message can be pasted."""
+    st.session_state["message"] = ""
+    st.session_state["where"] = list(CHANNELS)[0]
+    st.session_state["sender"] = ""
+
+
 with st.form("check"):
     message = st.text_area("The message", height=200, max_chars=MAX_CHARS,
-                           placeholder="Paste the message here")
-    where = st.selectbox("Where did it come from?", list(CHANNELS))
-    sender = st.text_input("Who is it from? (optional)",
+                           placeholder="Paste the message here", key="message")
+    where = st.selectbox("Where did it come from?", list(CHANNELS), key="where")
+    sender = st.text_input("Who is it from? (optional)", key="sender",
                            placeholder="For example: Royal Mail, a phone number, or a name")
-    submitted = st.form_submit_button("Check this message")
+    submitted = st.form_submit_button("Check this message", type="primary", width="stretch")
 
 if submitted:
     if not message.strip():
@@ -193,6 +200,7 @@ if submitted:
         with st.spinner("Checking..."):
             result = check(message, CHANNELS[where], sender.strip()[:200])
         show_result(result)
+        st.button("Check another message", on_click=clear_form, width="stretch")
 
 st.markdown(
     f'<div class="footer"><p>This is a personal portfolio project, not an official service. '
