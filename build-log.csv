@@ -1,0 +1,2 @@
+Date,Step,What I built,What went wrong,How I fixed it
+9 Nov 2026,1. Classifier,"Python classifier using Claude Haiku 5.5 that returns a verdict, up to 3 warning signs with explanations, and who the message impersonates, all checked against the fixed lists. Hand test on 5 messages","T01 (obvious Royal Mail £1.45 parcel scam) came back with 4 warning signs instead of the maximum 3. The validation correctly rejected it as an error, but a real user would get no answer for an obvious scam","To decide in step 3"

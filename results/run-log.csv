@@ -1,0 +1,2 @@
+timestamp,file,note,model,effort,missed_scam_messages,missed_scam_runs,false_alarm_messages,false_alarm_runs,exact_match_pct,changed_across_runs_pct,injection_failures,errors
+2026-11-09 14:27,run-2026-11-09-1427.csv,first version,claude-haiku-5-5,low,0,0,0,0,81.5,2.2,3,19
