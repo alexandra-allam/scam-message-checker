@@ -4,7 +4,7 @@ A free tool that gives older people, and the families who look out for them, a c
 
 It never tells anyone a message is safe.
 
-**Live demo:** [link coming soon](#)
+**Live demo:** [Try the Scam Message Checker](https://scam-message-checker-hwkaxmzneyhih9qww6ujht.streamlit.app/)
 
 ---
 
@@ -95,7 +95,7 @@ The code was written by Claude Code (Anthropic's AI coding assistant), working f
 What I did:
 
 - Designed the tool: the three verdicts, the 12 warning signs, the safety rules, and the fixed advice text.
-- Designed the test set of 45 messages, including the genuine messages that look scammy, the prompt-injection attempts and the edge cases.
+- Shaped the test set of 45 messages. Claude drafted the starter test set; I decided what it needed to cover and reviewed every case, including the genuine messages that look scammy, the prompt-injection attempts and the edge cases.
 - Decided how to measure it: 3 runs per message, with missed scams as the metric that matters most.
 - Reviewed every set of results critically, spotted problems such as the misleading injection metric, decided which fixes to make and in what order, and checked each one was measured before and after.
 - Kept a build log of every problem found and how it was fixed.
