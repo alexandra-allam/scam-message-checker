@@ -214,6 +214,16 @@ def classify(message: str, channel=None, sender=None) -> dict:
     except json.JSONDecodeError:
         return _error("response was not valid JSON")
 
+    # Step 3 fix: the AI sometimes lists more than 3 signs. They are asked for
+    # most important first, so keep the first 3 (and their explanations).
+    # Only done when every sign has an explanation; anything else still errors.
+    if (isinstance(data, dict)
+            and isinstance(data.get("signs"), list)
+            and isinstance(data.get("explanations"), list)
+            and len(data["signs"]) == len(data["explanations"]) > MAX_SIGNS):
+        data["signs"] = data["signs"][:MAX_SIGNS]
+        data["explanations"] = data["explanations"][:MAX_SIGNS]
+
     problem = validate(data)
     if problem:
         return _error(f"invalid output: {problem}")
